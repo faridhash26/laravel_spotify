@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
 
 use App\Models\Genres;
 use App\Models\Artists;
 use App\Models\Image;
+use App\Models\Songs;
 
 class Albums extends Model 
 {
@@ -34,6 +36,10 @@ class Albums extends Model
     public function artists()
     {
         return $this->belongsTo(Artists::class ,'artist_id');
+    }
+    public function songs():HasMany
+    {
+        return $this->hasMany(Songs::class ,'album_id', 'id');
     }
  
 }

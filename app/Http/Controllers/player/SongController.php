@@ -6,52 +6,46 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
-use App\Models\Albums;
-use App\Models\Image;
-use App\Models\User;
 
-class AlbumController extends Controller
+use App\Models\Songs;
+
+class SongsController extends Controller
 {
-    
-
-    public function index (Request $request ,User $user)
+    public function index()
     {
-        // $this->authorize('access_user', Albums::class);
-        // Gate::authorize('access_user' ,$user);
-        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('RETRIVERED_ALBUMS'));
-        $albums =Albums::with('genres' ,'artists' ,'posterImage' ,'backgroundImage')->simplePaginate();
+        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('RETRIVERED_SONGS'));
 
-        return response()->json($albums);
-
+        $songs = Songs::with(['genres' ,"artist" ,"posterImage" ,"backgroundImage" ,"album" ])->simplePaginate();
+        
+        return response()->json($songs);
     }
     public function create (Request $request)
     {
-        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('CREATE_ALBUM'));
+        $disk = 'songs';
 
-        $disk = 'albums';
+        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('CREATE_SONG'));
+
         $validatedData = Validator::make($request->all(),[
             'name' => ['required', 'string', 'max:255'],
             'release_date' => ['required', 'date'],
             'description' => ['required' ,'string'],
             'artist_id' => ['required' ,'integer'],
             'genre_id' => ['required' ,'integer'],
+            'album_id' => ['integer'],
             "album_poster" => ["required" , File::image() ] ,
             "album_background" => [File::image() ] ,
-
-
+            "song_file" =>[File::types(['mp3', 'wav'])],
+            'duration'=>['required' , 'date_format:h:i']
         ]);
         if ($validatedData->fails()) {
         
             return response()->json($validatedData->errors());
             
         }
-
-
-
         $file =$request->file('album_poster');
         $filename = $file->getClientOriginalName();
         $imageName= time() .'_' . $request->name . '_' . $filename;
@@ -60,8 +54,6 @@ class AlbumController extends Controller
             "file_name" =>$filename,
             "url" =>Storage::disk( $disk)->url($file_path),
         ]);
-
-       
         if($request->file('album_background')){
             $file_background =$request->file('album_background');
             $filename_background = $file_background->getClientOriginalName();
@@ -72,40 +64,34 @@ class AlbumController extends Controller
                 "url" =>Storage::disk($disk)->url($file_path_background),
             ]);
         }
-        
-        $alubm =Albums::create([
+        $song_file =$request->file('song_file');
+        $file_song_name = $file->getClientOriginalName();
+        $song_name= time() .'_' . $request->name . '_' . $file_song_name;
+        $song_file_path =$song_file->storeAs('songs', $song_name, $disk);
+
+        $song =Albums::create([
             "name"=>$request->name,
-            "description"=> $request->description,
             "release_date" => $request->release_date,
             "artist_id"=>$request->artist_id,
             "genre_id"=>$request->genre_id,
-            "poster_image_id" => $image_album_poster->id,
-            "background_image_id" => isset($album_background) ? $album_background->id : null
+            'album_id' => $request->album_id ? $request->album_id: null,
+            "url"=>Storage::disk( $disk)->url($song_file_path) ,
+            'duration'=>$request->duration,
         ]);
-        return response()->json(["message"=>"successfully created"]);
 
-        
+        return response()->json(["message"=>"successfully created"]);
 
     }
     public function view(Request $request)
     {
-
-        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('RETRIVERED_ALBUM'));
-        $album =Albums::with('genres' ,'artists' ,'posterImage' ,'backgroundImage' ,'songs')->find($request->id);
-        return response()->json($album);
-
-    }
-    public function update (Request $request)
-    {
-    }
-    public function softDelete (Request $request)
-    {
+        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('RETRIVERED_SONG'));
+        $song =Songs::with('genres' ,'artist' ,'album' ,'posterImage' ,'backgroundImage' )->find($request->id);
+        return response()->json($song);
     }
     public function deletePermanently (Request $request)
     {
-        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('DELETE_ALBUM'));
-        $albums =Albums::where('id', $request->id)->delete();
+        Gate::allowIf(fn (User $user) => $user->hasPermissionTo('DELETE_SONG'));
+        $song =Songs::where('id', $request->id)->delete();
         return response()->json(["message"=>"successfully deleted"]);
     }
-    
 }
