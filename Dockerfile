@@ -1,13 +1,8 @@
 # Base Image for Laravel
 FROM php:8.1-apache
 
-
-
-
-# Install Docker Compose
-RUN curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -oP '(?<="tag_name": ")[^"]*')/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/docker-compose
-
+# نصب Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -24,7 +19,6 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     g++
 
-
 RUN docker-php-ext-install \
     bz2 \
     intl \
@@ -36,7 +30,6 @@ RUN docker-php-ext-install \
 
 WORKDIR /var/www/html
 
-
 COPY . /var/www/html
 
 RUN a2enmod rewrite
@@ -44,15 +37,11 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN chmod +x /var/www/html/docker-entrypoint.sh
 
-
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
+
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
-# Verify installation
-RUN docker-compose --version
 EXPOSE 80
 
-
-# Your custom commands
 CMD ["sh", "apache2-foreground"]
