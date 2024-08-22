@@ -1,9 +1,7 @@
 FROM php:7.4-apache as laravel_base
 
-DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-mkdir -p $DOCKER_CONFIG/cli-plugins
-curl -SL https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
-
+RUN aptitude -y install docker-compose
+RUN ln -s /usr/local/bin/docker-compose /compose/docker-compose
 RUN apt-get update && apt-get install -y \
     git \
     zip \
