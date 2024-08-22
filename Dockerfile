@@ -1,7 +1,10 @@
 FROM php:7.4-apache as laravel_base
 
-RUN aptitude -y install docker-compose
-RUN ln -s /usr/local/bin/docker-compose /compose/docker-compose
+
+RUN curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+
+
+
 RUN apt-get update && apt-get install -y \
     git \
     zip \
