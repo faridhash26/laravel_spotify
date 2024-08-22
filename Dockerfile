@@ -34,13 +34,6 @@ RUN mkdir -p /var/www/tmp
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install Docker Compose
-RUN curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/docker-compose
-
-
-
-
 # Main Laravel Application
 FROM laravel_base
 RUN a2enmod rewrite
