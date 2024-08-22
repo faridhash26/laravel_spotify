@@ -28,9 +28,6 @@ RUN apt-get update && apt-get install -y \
     pdo_mysql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Create temporary directory
-RUN mkdir -p /var/www/tmp
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -38,22 +35,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose
 
-# Node Stage for Frontend (Optional)
-FROM node:14 as node_dependencies
-WORKDIR /var/www/tmp
-COPY --from=laravel_base /var/www/tmp /var/www/tmp
-RUN npm install && \
-    npm run production && \
-    rm -rf node_modules
-
-# Main Laravel Application
-FROM laravel_base
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
-COPY --from=node_dependencies --chown=www-data:www-data /var/www/tmp/ /var/www/html/
-COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy the application code to the container
+COPY . /var/www/html
 
 # Run Composer install and set permissions
-WORKDIR /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
