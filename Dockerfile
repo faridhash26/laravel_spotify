@@ -1,7 +1,7 @@
 # Base Image for Laravel
 FROM php:7.4-apache as laravel_base
 
-# Install necessary packages
+# Install necessary packages and PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
     zip \
@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libbz2-dev \
     libpng-dev \
     libjpeg-dev \
+    libzip-dev \
     libmcrypt-dev \
     libreadline-dev \
     libfreetype6-dev \
@@ -26,6 +27,7 @@ RUN apt-get update && apt-get install -y \
     opcache \
     calendar \
     pdo_mysql \
+    zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -45,7 +47,11 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Run Composer install and set permissions
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader || { \
+    echo "Composer install failed. Attempting with --no-scripts and --no-plugins..."; \
+    composer install --no-dev --no-scripts --no-plugins --optimize-autoloader; \
+}
+
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copy and set entrypoint
