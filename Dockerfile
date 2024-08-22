@@ -37,7 +37,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Main Laravel Application
 FROM laravel_base
 RUN a2enmod rewrite
-COPY --from=node_dependencies --chown=www-data:www-data /var/www/tmp/ /var/www/html/
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Run Composer install and set permissions
