@@ -39,6 +39,7 @@ RUN chmod +x /var/www/html/docker-entrypoint.sh
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
