@@ -25,9 +25,8 @@ RUN docker-php-ext-install \
     calendar \
     pdo_mysql
     
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-RUN composer install
+RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/1b137f8bf6db3e79a38a5bc45324414a6b1f9df2/web/installer -O - -q | php -- --quiet
+RUN mv composer.phar /usr/local/bin/composer
 
 
 FROM node:14 as node_dependencies
