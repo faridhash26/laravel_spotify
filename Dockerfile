@@ -27,9 +27,8 @@ RUN docker-php-ext-install \
     
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-COPY . /var/www/tmp
-RUN cd /var/www/tmp && composer install --no-dev
+RUN composer install
+
 
 FROM node:14 as node_dependencies
 WORKDIR /var/www/html
