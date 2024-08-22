@@ -36,7 +36,6 @@ RUN cd /var/www/tmp && composer install --no-dev
 
 FROM laravel_base
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./vhost.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 CMD service php7.4-fpm start && nginx -g "daemon off;"
