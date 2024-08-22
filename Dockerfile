@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     && docker-php-ext-install \
     bz2 \
     intl \
@@ -26,10 +27,8 @@ RUN apt-get update && apt-get install -y \
     opcache \
     calendar \
     pdo_mysql \
+    zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Create temporary directory
-RUN mkdir -p /var/www/tmp
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -37,11 +36,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Main Laravel Application
 FROM laravel_base
 RUN a2enmod rewrite
-COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY . /var/www/html
+
+# Set working directory
+WORKDIR /var/www/html
 
 # Run Composer install and set permissions
-WORKDIR /var/www/html
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader -vvv
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copy and set entrypoint
