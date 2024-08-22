@@ -29,7 +29,7 @@ RUN composer install
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copy Nginx configuration
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ../nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80
