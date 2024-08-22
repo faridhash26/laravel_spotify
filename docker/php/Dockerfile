@@ -1,44 +1,40 @@
-FROM php:8.0-fpm
+
+FROM php:8.1-fpm
 
 
-ENV DOCKERIZE_VERSION 0.6.1
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql gd
 
-RUN curl -s -f -L -o /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/v$DOCKERIZE_VERSION/dockerize-linux-amd64-v$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz \
-    && rm /tmp/dockerize.tar.gz
 
-ENV COMPOSER_VERSION 2.1.5
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=$COMPOSER_VERSION
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libz-dev \
-        libpq-dev \
-        libjpeg-dev \
-        libpng-dev \
-        libssl-dev \
-        libzip-dev \
-        unzip \
-        zip \
-        nodejs \
-    && apt-get clean \
-    && pecl install redis \
-    && docker-php-ext-configure gd \
-    && docker-php-ext-configure zip \
-    && docker-php-ext-install \
-        gd \
-        exif \
-        opcache \
-        pdo_mysql \
-        pdo_pgsql \
-        pgsql \
-        pcntl \
-        zip \
-    && docker-php-ext-enable redis \
-    && rm -rf /var/lib/apt/lists/*;
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY ./docker/php/laravel.ini /usr/local/etc/php/conf.d/laravel.ini
 
-WORKDIR /usr/src/app
+COPY . /var/www
 
-RUN chown -R www-data:www-data .
+
+WORKDIR /var/www
+
+
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
+
+
+RUN composer install
+
+
+CMD ["php-fpm"]
+
+EXPOSE 9000
