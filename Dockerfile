@@ -41,12 +41,13 @@ COPY . /var/www/html
 
 RUN a2enmod rewrite
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-RUN echo '<Directory /var/www/html/public>\n\
-    AllowOverride All\n\
-    </Directory>' >> /etc/apache2/apache2.conf
+COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
 # Verify installation
 RUN docker-compose --version
