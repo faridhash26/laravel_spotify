@@ -31,7 +31,8 @@ RUN docker-php-ext-install \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . /var/www/tmp
-RUN cd /var/www/tmp && composer install 
+RUN cd /var/www/tmp
+RUN composer install 
 
 
 FROM laravel_base
