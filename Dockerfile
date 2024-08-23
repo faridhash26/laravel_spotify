@@ -30,7 +30,7 @@ RUN docker-php-ext-install \
     pdo_mysql
 
 # تنظیمات PHP-FPM
-RUN sed -i 's!listen = /run/php/php8.2-fpm.sock!listen = 127.0.0.1:9000!g' /usr/local/etc/php-fpm.d/www.conf
+RUN sed -i 's!listen = /run/php/php8.2-√ = 127.0.0.1:8000!g' /usr/local/etc/php-fpm.d/www.conf
 
 # کپی کردن سورس‌ها به دایرکتوری کار
 WORKDIR /var/www/html
