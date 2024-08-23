@@ -30,7 +30,13 @@
 
 # # Set the default command to run php-fpm
 # CMD ["php-fpm"]
-FROM nginx:1.10.1-alpine
-COPY index.html /usr/share/nginx/html
-EXPOSE 8080
+ # Base Image 
+FROM nginx:alpine
+# MAINTAINER of the Dockerfile
+MAINTAINER Bikram https://music-spotify.darkube.app
+#Copy the index.html file /usr/share/nginx/html/
+COPY index.html /usr/share/nginx/html/
+#Expose Nginx Port
+EXPOSE 80
+#Start NginxService 
 CMD ["nginx", "-g", "daemon off;"]
