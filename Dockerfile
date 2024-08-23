@@ -1,58 +1,32 @@
 # Base Image for Laravel
 FROM php:8.2-fpm
 
-# نصب Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN apt-get update && apt-get install -y nano
+# Install common php extension dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    zip \
-    curl \
-    sudo \
-    unzip \
-    libicu-dev \
-    libbz2-dev \
+    libfreetype-dev \
+    libjpeg62-turbo-dev \
     libpng-dev \
-    libjpeg-dev \
-    libmcrypt-dev \
-    libreadline-dev \
-    libfreetype6-dev \
-    g++ \
-    nginx
+    zlib1g-dev \
+    libzip-dev \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install zip
 
-RUN docker-php-ext-install \
-    bz2 \
-    intl \
-    iconv \
-    bcmath \
-    opcache \
-    calendar \
-    pdo_mysql
+# Set the working directory
+COPY . /var/www/app
+WORKDIR /var/www/app
 
-# تنظیمات PHP-FPM
-RUN sed -i 's!listen = /run/php/php8.2-√ = 127.0.0.1:8000!g' /usr/local/etc/php-fpm.d/www.conf
+RUN chown -R www-data:www-data /var/www/app \
+    && chmod -R 775 /var/www/app/storage
 
-# کپی کردن سورس‌ها به دایرکتوری کار
-WORKDIR /var/www/html
 
-COPY . /var/www/html
+# install composer
+COPY --from=composer:2.6.5 /usr/bin/composer /usr/local/bin/composer
 
-# اجرای دستورات موجود در entrypoint
-RUN composer install --no-dev --optimize-autoloader \
-    && php artisan migrate --force || { echo 'Migration failed'; exit 1; } \
-    && php artisan storage:link || { echo 'Storage link failed'; exit 1; } \
-    && php artisan config:cache || { echo 'Config cache failed'; exit 1; } \
-    && php artisan route:cache || { echo 'Route cache failed'; exit 1; }
+# copy composer.json to workdir & install dependencies
+COPY composer.json ./
+RUN composer install
 
-# تنظیمات Nginx
-COPY ./nginx.conf /etc/nginx/nginx.conf
-
-# تغییر دسترسی‌ها
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
-
-# اجرای PHP-FPM و Nginx
-CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
-
-# پورت‌های قابل استفاده
-EXPOSE 80
+# Set the default command to run php-fpm
+CMD ["php-fpm"]
