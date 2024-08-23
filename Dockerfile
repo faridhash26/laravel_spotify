@@ -45,8 +45,7 @@ RUN chown -R www-data:www-data /var/www/html \
 
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
-# اجرا و راه‌اندازی Nginx و PHP-FPM
-CMD ["sh", "-c", "nginx && php-fpm"]
+
 
 # پورت‌های قابل استفاده
 EXPOSE 80
