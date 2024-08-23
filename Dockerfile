@@ -1,5 +1,5 @@
 # Base Image for Laravel
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
 # نصب Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
     libmcrypt-dev \
     libreadline-dev \
     libfreetype6-dev \
-    g++
+    g++ \
+    nginx
 
 RUN docker-php-ext-install \
     bz2 \
@@ -27,22 +28,25 @@ RUN docker-php-ext-install \
     opcache \
     calendar \
     pdo_mysql
+# تنظیمات PHP-FPM
+RUN sed -i 's!listen = /run/php/php8.2-fpm.sock!listen = 127.0.0.1:9000!g' /usr/local/etc/php-fpm.d/www.conf
 
 WORKDIR /var/www/html
 
 COPY . /var/www/html
 
-RUN a2enmod rewrite
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+# تنظیمات Nginx
+COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN chmod +x /var/www/html/docker-entrypoint.sh
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
-EXPOSE 80
+# اجرا و راه‌اندازی Nginx و PHP-FPM
+CMD ["sh", "-c", "nginx && php-fpm"]
 
-CMD ["sh", "apache2-foreground"]
+# پورت‌های قابل استفاده
+EXPOSE 80
