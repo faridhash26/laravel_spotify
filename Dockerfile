@@ -1,6 +1,5 @@
 # Use the official PHP image as the base image
 FROM php:8.2-fpm
-dockerfile
 
 Copy
 # Use the official PHP image as the base image
@@ -40,7 +39,7 @@ CMD ["php-fpm"]
 
 
 
-dockerfile
+
 
 Copy
 # Use the official Nginx image as the base image
