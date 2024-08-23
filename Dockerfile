@@ -37,7 +37,7 @@ COPY . /var/www/html
 
 # تنظیمات Nginx
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+
 RUN chmod +x /var/www/html/docker-entrypoint.sh
 
 RUN chown -R www-data:www-data /var/www/html \
