@@ -1,38 +1,13 @@
-# Use the official PHP image as the base image
-FROM php:8.2-fpm
+FROM php:8.2-fpm-alpine
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
+ADD ./docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
 
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN mkdir -p /var/www/html
 
-# Set working directory
-WORKDIR /var/www/html
+ADD ./src/ /var/www/html
 
-# Copy application files
-COPY . .
+RUN docker-php-ext-install pdo pdo_mysql
 
-# Install PHP dependencies
-RUN composer install --no-dev --no-interaction --optimize-autoloader
-
-# Build for production
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
-
-# Expose the port
-EXPOSE 9000
-
-# Start PHP-FPM server
-CMD ["php-fpm"]
+RUN chown -R laravel:laravel /var/www/html
