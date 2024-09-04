@@ -30,6 +30,7 @@ COPY ../ /var/www/html
 # نصب وابستگی‌ها با Composer
 RUN composer install --no-interaction --prefer-dist
 
+
 # تنظیم کاربری
 RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
 
@@ -39,7 +40,4 @@ RUN chown -R laravel:laravel /var/www/html
 # تنظیم دایرکتوری کاری
 WORKDIR /var/www/html
 
-
-
-# تنظیم سرویس PHP-FPM
 CMD ["php-fpm"]
